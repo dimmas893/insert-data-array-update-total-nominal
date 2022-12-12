@@ -1,0 +1,38 @@
+$tampung_total = [];
+				foreach($request->keranjang_invoice as $p){
+					$invoice = Invoice_Tagihan::where('id_invoice', $p['id_invoice'])->first();
+					$kategori_tagihan = Kategori_Tagihan::where('id', $invoice->id_tagihan)->first();
+						$rinciancreate = [
+							'id_pembayaran' => $emp->id_pembayaran,
+							'id_invoice' => $p['id_invoice'],
+							'tanggal_pembayaran' => $request->tanggal_pembayaran,
+							'nominal_pembayaran' => $kategori_tagihan->nominal,
+							'metode_pembayaran' => $request->metode_pembayaran
+						];
+						$rincian = Rincian_Pembayaran::create($rinciancreate);
+					// }
+
+					$invoice_update = [
+						'status' => 'paid'
+					];
+					$pentol = Invoice_Tagihan::where('id_invoice', $p['id_invoice'])->update($invoice_update);
+					array_push($tampung_total, $rincian->nominal_pembayaran);
+
+					}
+
+				$total = array_sum($tampung_total);
+
+
+			$update = [
+				'total_pembayaran' => $total,
+				'status' => 'paid',
+			];
+
+			$pembayaran_update = Pembayaran::where('id_pembayaran', $emp->id_pembayaran)->update($update);
+
+			// dd($pentol);
+			return response()->json([
+				'data_pembayaran' => $emp,
+				'data_rincian_pembayaran' => $rincian,
+				'status' => 200
+			]);
